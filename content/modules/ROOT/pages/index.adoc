@@ -1,19 +1,45 @@
-= Building a Modern Application Platform with Azure & ARO 
+= Welcome to Inner Loop Workshop
+:page-layout: home
+:!sectids:
 
-Welcome to the Building a Modern Application Platform workshop. In this workshop you will learn the building blocks of a modern application platform and leverage Microsoft Azure and  Azure Red Hat OpenShift (ARO) to build a modern application platform. 
+[.text-center.strong]
+== Ready to become a Cloud Native Developer?
 
-https://azure.microsoft.com/en-us/services/openshift/[Azure Red Hat OpenShift,window=_blank] is a fully managed Red Hat OpenShift service in Azure that is jointly engineered and supported by Microsoft and Red Hat.
+This immersive workshop will put you in the Cloud Native world as a Developer: code, run and deploy modern applications on 
+OpenShift using rich and advanced development services.
 
-*Who this workshop is for:* This workshop is aimed at Platform Engineers, DevOps Engineers, Cloud Operations, Architects, and Developers that want to learn what makes a modern application platform, and how they can leverage cloud services to streamline the delivery and operations of their application platforms.
+image::inner-loop.png[Developer Inner Loop, 400]
 
-*What to expect:* During the workshop, attendees will learn how to build a modern application platform by leveraging Azure Red Hat OpenShift, and other Azure cloud services. Through a series of hands on modules and instructor led presentations, attendees will:
+The goal of this hands-workshop is to provide a Developer Experience through the Inner Loop using Cloud Native Technologies.
 
-- Perform Day 2 operations tasks such as configuring node and cluster scaling policies, configuring managed upgrades, and using labels for deterministic app placement on nodes.
-- Deploy an application that uses Azure Database for Postgres.
-- Make an application on OpenShift scalable and resistant to node failures and upgrades.
-- Ensure application configuration consistency with OpenShift GitOps.
-- Deploy an application to ARO.
-- Integrate ARO with Azure services such as Azure AD, Azure Files, and more. 
-- Deploy OpenShift Service Mesh on ARO to manage a microservices deployment.
+To be a part of this journey, all you need is to bring your modern web browser. 
+Everything else is running on the Cloud, on OpenShift.
 
-After completing this workshop, attendees will understand the concepts of modern application platforms, and will have begun to lay the foundations in their provided Azure infrastructure.
+== Session Summary
+
+Get hands-on with cloud based code Development using OpenShift Dev Spaces.
+
+Explore the inner loop by creating simple microservices with Quarkus, Spring Boot, .NET and Nodejs.
+
+Deploy a web based application to OpenShift.
+
+Monitor its health.
+
+Discover OpenShift service resilience, scale and fault tolerance.
+
+Finally utilise external configuration to leverage OpenShift database access.
+
+=== Audience
+
+A Developer, Architect, DevOps, or manager wishing to learn about the Cloud Native development with OpenShift. 
+Some programming experience, especially with Java would be useful.
+
+
+[cols="1,3,2"]  
+|===
+| *Duration* | *Audience* | *Level*
+|3.5 hour
+|Developers that want to learn OpenShift and Kubernetes
+|Beginner with OpenShift
+|===
+
