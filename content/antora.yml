@@ -1,0 +1,11 @@
+name: modules
+title: Modern Application Development Roadshow - Dev Track
+version: master
+nav:
+- modules/ROOT/nav.adoc
+asciidoc:
+  attributes:
+    lab_name: Modern Application Development Roadshow - Dev Track
+    release_version: master
+    page-pagination: true  
+    experimental: true
