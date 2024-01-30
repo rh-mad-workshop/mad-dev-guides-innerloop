@@ -1,11 +1,11 @@
 name: modules
-title: Modern Application Development Roadshow - Dev Track
+title: Cloud Native App Innerloop Development
 version: master
 nav:
 - modules/ROOT/nav.adoc
 asciidoc:
   attributes:
-    lab_name: Modern Application Development Roadshow - Dev Track
+    lab_name: Cloud Native App Innerloop Development
     release_version: master
     page-pagination: true  
     experimental: true
