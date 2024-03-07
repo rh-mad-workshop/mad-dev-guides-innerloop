@@ -38,7 +38,7 @@ Some programming experience, especially with Java would be useful.
 [cols="1,3,2"]  
 |===
 | *Duration* | *Audience* | *Level*
-|3.5 hour
+|1 hour
 |Developers that want to learn OpenShift and Kubernetes
 |Beginner with OpenShift
 |===
