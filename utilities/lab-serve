@@ -4,5 +4,9 @@ echo "Starting serve process..."
 # TODO: Add case statement to allow stopping, starting, and restarting
 # TODO: Add logic to detect both podman and docker, if both are installed, use podman as default "first found"
 # TODO: Move to RHEL image
+
+# set container runtime to docker if no container runtime is set
+if [ -z "$CONTAINER_RUNTIME" ]; then CONTAINER_RUNTIME="docker"; fi
+echo "The container runtime is $CONTAINER_RUNTIME" 
 ${CONTAINER_RUNTIME} run -d --rm --name showroom-httpd -p 8443:80 -v "./www:/usr/local/apache2/htdocs/" docker.io/httpd:2.4
 echo "Serving lab content on http://localhost:8443/index.html"
