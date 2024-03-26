@@ -9,7 +9,7 @@
 
 _10 MINUTE EXERCISE_
 
-In this lab you will learn about Node.js and will deploy the Node.js and Angular-based 
+In this lab you will deploy the Node.js and Angular-based 
 web frontend for the CoolStore online shop which uses the API Gateway services you deployed 
 in previous labs. 
 
@@ -40,8 +40,8 @@ The Web UI is built using Node.js for server-side JavaScript and AngularJS for c
 JavaScript. Let's deploy it on OpenShift using the certified Node.js container image available 
 in OpenShift. 
 
-In this lab, again you will use OpenShift https://docs.openshift.com/container-platform/4.12/cicd/builds/understanding-image-builds.html[Source-to-Image (S2I)^].
-OpenShift will obtain the application code directly from the source repository then build and deploy a 
+In this lab, you will use OpenShift https://docs.openshift.com/container-platform/latest/cicd/builds/understanding-image-builds.html[Source-to-Image (S2I)^] again.
+OpenShift will obtain the application code directly from the source repository and then build and deploy a 
 container image of it.
 
 For a change, rather than using the CLI option you will start this process from the web console.
@@ -85,10 +85,10 @@ Then, enter the following information:
 
 |===
 
-From the advanced Routing options `*de-select the Secure Route option*`, so this creates an *HTTP* route
+From the advanced Routing options `*select the Secure Route option*` and set TLS termination to "Edge", so this creates an *HTTPS* route. 
 like below:-
 
-image::openshift-add-http-route.png[OpenShift - Add route, 600]
+image::openshift-add-https-route.png[OpenShift - Add route, 600]
 
 `*Click on 'Create' button*` 
 
