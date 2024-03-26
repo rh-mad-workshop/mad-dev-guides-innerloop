@@ -59,16 +59,16 @@ The **'/projects/workshop/labs/inventory-quarkus'** folder contents:
 
 `*Look at the pom.xml*`. You will find the import of the Quarkus BOM, allowing you to omit the version 
 on the different Quarkus dependencies. In addition, you can see the **quarkus-maven-plugin** responsible for the packaging 
-of the application and also providing the *development mode* feature.
+of the application and also providing the *dev mode* feature.
 
 [source,xml]
 ----
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>${quarkus.platform.group-id}</groupId>
             <artifactId>quarkus-bom</artifactId>
-            <version>${quarkus.version}</version>
+            <version>${quarkus.platform.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -78,9 +78,9 @@ of the application and also providing the *development mode* feature.
 <build>
     <plugins>
         <plugin>
-            <groupId>io.quarkus</groupId>
+            <groupId>${quarkus.platform.group-id}</groupId>
             <artifactId>quarkus-maven-plugin</artifactId>
-            <version>${quarkus.version}</version>
+            <version>${quarkus.platform.version}</version>
             <executions>
                 <execution>
                     <goals>
@@ -99,11 +99,15 @@ If we focus on the dependencies section, you can see the following extensions:
 ----
     <dependency>
         <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-resteasy-jsonb</artifactId>
+        <artifactId>quarkus-resteasy-reactive</artifactId>
     </dependency>
     <dependency>
         <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-hibernate-orm</artifactId>
+        <artifactId>quarkus-resteasy-reactive-jsonb</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-hibernate-orm-panache</artifactId>
     </dependency>
     <dependency>
         <groupId>io.quarkus</groupId>
@@ -122,11 +126,14 @@ If we focus on the dependencies section, you can see the following extensions:
 |Name 
 |Description
 
+|https://quarkus.io/guides/resteasy-reactive[REST Services with RESTEasy Reactive^]
+|It allows you to develop non-blocking, reactive REST Services
+
 |https://quarkus.io/guides/rest-json-guide[JSON REST Services^]
 |It allows you to develop REST services to consume and produce JSON payloads
 
-|https://quarkus.io/guides/hibernate-orm-guide[Hibernate ORM^]
-|The de facto JPA implementation and offers you the full breath of an Object Relational Mapper. 
+|https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM with Panache^]
+|Hibernate is the de facto JPA implementation and offers you the full breath of an Object Relational Mapper. With Panache you will get additional convenience features. 
 
 |https://quarkus.io/guides/datasource-guide#h2[Datasources (H2)^]
 |Using datasources is the main way of obtaining connections to a database.
@@ -142,10 +149,10 @@ If we focus on the dependencies section, you can see the following extensions:
 ----
 package com.redhat.cloudnative;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/hello")
 public class InventoryResource {
@@ -164,7 +171,7 @@ It's a very simple REST endpoint, returning "hello" to requests on "/hello".
 ====
 With Quarkus, there is no need to create an Application class. It is supported, but not required. In addition, 
 only one instance of the resource is created and not one per request. You can configure this using the different **Scoped** annotations 
-(ApplicationScoped, RequestScoped, etc).
+(ApplicationScoped, RequestScoped, etc). In addition, Quarkus is able to mix and match Reactive and Imperative programming, so you won't have to worry about the reactive aspect of the REST service.
 ====
 
 [#enable_development_mode]
@@ -172,10 +179,9 @@ only one instance of the resource is created and not one per request. You can co
 
 **quarkus:dev** runs Quarkus in development mode. This enables hot deployment with background compilation, 
 which means that when you modify your Java files and/or your resource files and refresh your browser, these changes will 
-automatically take effect. This works too for resource files like the configuration property file. Refreshing the browser 
-triggers a scan of the workspace, and if any changes are detected, the Java files are recompiled and the application is redeployed; 
-your request is then serviced by the redeployed application. If there are any issues with compilation or deployment an error page 
-will let you know.
+automatically take effect. This works for resource files like the configuration property file as well. Refreshing the browser 
+triggers a scan of the workspace, and if any changes are detected, the affected Java files are recompiled and the application is redeployed; 
+your request is then serviced by the redeployed application. If there are any issues with compilation or deployment an error page will let you know.
 
 First, in your {CHE_URL}[Workspace^, role='params-link'],
 
@@ -233,10 +239,10 @@ If by accident you close that browser tab then you should be able to reopen it f
 It will likely be called *Inventory Service*
 ====
 
-Now let's write some code and create a domain model and a RESTful endpoint to create the Inventory service
+Now let's write some code and create an Entity to interact with the Database and a RESTful endpoint to create the Inventory service
 
-[#create_domain_model]
-== Create a Domain Model
+[#create_entity]
+== Create an Entity
 
 `*Create the 'src/main/java/com/redhat/cloudnative/Inventory.java' file`* as follows:
 
@@ -244,52 +250,20 @@ Now let's write some code and create a domain model and a RESTful endpoint to cr
 ----
 package com.redhat.cloudnative;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Column;
-import java.io.Serializable;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Entity // <1> 
 @Table(name = "INVENTORY") // <2> 
-public class Inventory implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id // <3> 
-    private String itemId;
-
-    @Column
-    private int quantity;
-
-    public Inventory() {
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    @Override
-    public String toString() {
-        return "Inventory [itemId='" + itemId + '\'' + ", quantity=" + quantity + ']';
-    }
+public class Inventory extends PanacheEntity { // <3>
+    public int quantity; // <4>
 }
 ----
 <1> **@Entity** marks the class as a JPA entity
 <2> **@Table** customizes the table creation process by defining a table name and database constraint
-<3> **@Id** marks the primary key for the table
+<3> **PanacheEntity** is a very useful super class that, among others, autogenerates an id field
+<4> **public int quantity** defines the name of a field. https://quarkus.io/guides/hibernate-orm-panache#how-and-why-we-simplify-hibernate-orm-mappings[Panache will rewrite the access to private] and generate getters and setters during runtime, allowing you to eliminate a lot of boilerplate code.
 
 [NOTE]
 ====
@@ -311,23 +285,25 @@ quarkus.http.host=0.0.0.0
 
 %prod.quarkus.package.type=uber-jar#<1> 
 
-# these value are required for a quarkus openshift plugin build<2>
+# these value are recommended for a quarkus openshift plugin build<2>
 %prod.quarkus.openshift.route.expose=true
 %prod.quarkus.openshift.deployment-kind=Deployment
 %prod.quarkus.openshift.labels.app=coolstore
 %prod.quarkus.openshift.labels.component=inventory
 %prod.quarkus.openshift.part-of=coolstore
-%prod.quarkus.container-image.name=inventory-coolstore
 %prod.quarkus.openshift.name=inventory-coolstore
-%prod.quarkus.openshift.ports."http".host-port=8080
 %prod.quarkus.openshift.add-version-to-label-selectors=false
 %prod.quarkus.openshift.labels."app.kubernetes.io/instance"=inventory
+quarkus.container-image.name=inventory-coolstore
+quarkus.container-image.registry=image-registry.openshift-image-registry.svc:5000
+quarkus.openshift.route.tls.termination=edge
+quarkus.openshift.route.tls.insecure-edge-termination-policy=Redirect
 
 ----
 <1> An **uber-jar** contains all the dependencies required packaged in the **jar** to enable running the 
 application with **java -jar**. By default, in Quarkus, the generation of the uber-jar is disabled. With the
 **%prod** prefix, this option is only activated when building the jar intended for deployments.
-<2> There is a lot of additional configuration here to allow the quarkus-maven-plugin to build 
+<2> Additional configuration to allow the quarkus-maven-plugin to build 
 and then deploy this application to OpenShift - but more of that later
 
 `*Update the 'src/main/resources/import.sql' file`* as follows:
@@ -354,27 +330,22 @@ Quarkus uses JAX-RS standard for building REST services.
 ----
 package com.redhat.cloudnative;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/api/inventory")
 @ApplicationScoped
 public class InventoryResource {
 
-    @Inject
-    EntityManager em;
-
     @GET
     @Path("/{itemId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Inventory getAvailability(@PathParam("itemId") String itemId) {
-        Inventory inventory = em.find(Inventory.class, itemId);
+        Inventory inventory = Inventory.findById(itemId);
         return inventory;
     }
 }
@@ -382,7 +353,7 @@ public class InventoryResource {
 
 The above REST service defines an endpoint that is accessible via **HTTP GET** at 
 for example **/api/inventory/329299** with 
-the last path param being the product id which we want to check its inventory status.
+the last path param being the product id with which we can check the inventory status.
 
 
 `*Refresh your browser*` (for the *Inventory Service* tab just opened) and you should see the new content **without rebuilding your JAR file**
@@ -396,8 +367,11 @@ the last path param being the product id which we want to check its inventory st
 
 The REST API returned a JSON object representing the inventory count for this product. Congratulations!
 
-[#stop_development_mode]
-== Stop the Development Mode
+[NOTE]
+You may have noticed that there are test classes in the project (test/java/com/redhat/cloudnative/InventoryResourceTest.java). Since we changed our code these tests are now broken. Feel free to fix them if you want an extra challenge (or you can ignore the broken tests if you just want to move on). TIP: you can enable live testing while in dev mode by pressing the letter 'r'.
+
+[#stop_dev_mode]
+== Stop Dev Mode
 
 In your {CHE_URL}[Workspace^, role='params-link'], stop the service as follows:
 
@@ -421,63 +395,42 @@ CLI::
 == Deploy on OpenShift
 
 Using the Quarkus-maven-plugin, the Quarkus https://quarkus.io/guides/deploying-to-openshift[OpenShift Extension] and Source to Image (S2I)
-it’s time to deploy your service on OpenShift using all that information in the *src/main/resources/application.properties* file
+it's time to deploy your service on OpenShift using all that information in the *src/main/resources/application.properties* file
 we saw earlier.
 
 In this section you will locally build a .jar file, then *create* the OpenShift build and deployment components
-and *push* the .jar it to OpenShift. The OpenShift https://docs.openshift.com/container-platform/4.12/cicd/builds/understanding-image-builds.html[Source-to-Image (S2I)^] builder 
+and *push* the .jar to OpenShift. The OpenShift https://docs.openshift.com/container-platform/4.12/cicd/builds/understanding-image-builds.html[Source-to-Image (S2I)^] builder 
 will then package the .jar file into a container and run it.
 
 [source,java,subs="{markup-in-source}"]
 ----
-# these value are required for a quarkus openshift plugin build
-%prod.quarkus.openshift.route.expose=true<3>
-%prod.quarkus.openshift.deployment-kind=Deployment
+# these value are recommended for a quarkus openshift plugin build
+%prod.quarkus.openshift.route.expose=true<1>
+%prod.quarkus.openshift.deployment-kind=Deployment<2>
 %prod.quarkus.openshift.labels.app=coolstore
-%prod.quarkus.openshift.labels.component=inventory<1>
+%prod.quarkus.openshift.labels.component=inventory
 %prod.quarkus.openshift.part-of=coolstore
-%prod.quarkus.container-image.name=inventory-coolstore
 %prod.quarkus.openshift.name=inventory-coolstore
-%prod.quarkus.openshift.ports."http".host-port=8080<2>
 %prod.quarkus.openshift.add-version-to-label-selectors=false
-%prod.quarkus.openshift.labels."app.kubernetes.io/instance"=inventory<1>
+%prod.quarkus.openshift.labels."app.kubernetes.io/instance"=inventory
+quarkus.container-image.name=inventory-coolstore
+quarkus.container-image.registry=image-registry.openshift-image-registry.svc:5000
+quarkus.openshift.route.tls.termination=edge<3>
+quarkus.openshift.route.tls.insecure-edge-termination-policy=Redirect
 ----
-<1> Its called *inventory*
-<2> The service port 8080 will be used for HTTP
-<3> The application has an external route for public access
+<1> Exposes an external route to access the application
+<2> Deploy the application as a standard Kubernetes Deployment
+<3> Tells Openshift to create a secure (HTTPS) route
 
-
-In your {CHE_URL}[Workspace^, role='params-link'], **build** your jar file.
-
-[tabs, subs="attributes+,+macros"]
-====
-
-IDE Task::
-+
--- 
-`*Click on 'Terminal' -> 'Run Task...' ->  'devfile: Inventory - Build'*`
-
-image::che-runtask.png[Che - RunTask, 600]
---
-
-CLI::
-+
---
-`*Execute the following commands in the terminal window*`
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-cd /projects/workshop/labs/inventory-quarkus
-mvn clean package -DskipTests
-----
 
 NOTE: To open a terminal window, `*click on 'Terminal' -> 'New Terminal'*`
 --
 ====
 
-Once this completes, **deploy** your application code/binary for OpenShift. By watching the 
+We can now **build** and **deploy** your application code/binary to OpenShift. By watching the 
 log output you should see this activity:
 
+* Build the jar file
 * Push the jar file to OpenShift
 * Create OpenShift deployment components
 * Build a container using a Dockerfile/Containerfile
@@ -510,7 +463,7 @@ NOTE: To open a terminal window, `*click on 'Terminal' -> 'New Terminal'*`
 --
 ====
 
-The output should be like this:
+The output should look a little bit like this:
 
 [source,shell,subs="{markup-in-source}"]
 ----
@@ -568,7 +521,8 @@ The output should be like this:
 [INFO] Total time:  03:01 min
 [INFO] Finished at: 2023-05-11T15:19:06Z
 [INFO] ------------------------------------------------------------------------
----- 
+====
+--
 
 
 Once this completes, your application should be up and running. 

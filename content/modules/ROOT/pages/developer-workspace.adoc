@@ -14,7 +14,7 @@ _10 MINUTE EXERCISE_
 In this lab you will learn about providing your Developer Workspace with a Kubernetes-native development platform 
 and getting familiar with the OpenShift CLI and OpenShift Web Console.
 
-[#what_is_codeready_workspaces]
+[#what_is_openshift_devspaces]
 == What is Red Hat OpenShift Dev Spaces?
 
 .Red Hat OpenShift DevSpaces
