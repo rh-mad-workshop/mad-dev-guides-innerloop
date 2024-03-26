@@ -6,10 +6,10 @@
 = Create Gateway Service with .NET
 :navtitle: Create Gateway Service with .NET
 
-_15 MINUTE EXERCISE_
+_10 MINUTE EXERCISE_
 
-In this lab you will learn about .NET and how you can 
-build microservices using ASP.NET principles. During this lab you will 
+In this lab you will learn how you can 
+build microservices using ASP.NET Core. During this lab you will 
 create a scalable API Gateway that aggregates Catalog and Inventory APIs.
 
 image::coolstore-arch-gateway-dotnet.png[CoolStore Architecture,400]
@@ -23,8 +23,7 @@ image::240px-NET_Core_Logo.png[.NET, 240]
 
 https://docs.microsoft.com/en-us/dotnet/core/introduction/[.NET (Core)^] is a 
 is a free, open-source development platform for building many kinds of apps, from web, serverless, mobile, desktop and console apps.
-With .NET your code and project files look and feel the same no matter which type of app you're building and you have access to the 
-same runtime, API and language capabilities with each app.
+
 You can create .NET apps for many operating systems, including Windows, Linux and MacOS on a variety of hardware. .NET lets 
 you use platform-specific capabilities, such as operating system APIs. Examples are Windows Forms and WPF on Windows .NET is open 
 source, https://github.com/dotnet/runtime/blob/master/LICENSE.TXT[using MIT and Apache 2 licenses^] .NET is a project of the https://dotnetfoundation.org/[.NET Foundation.^]
@@ -42,7 +41,7 @@ the project laid out in different subdirectories according to ASP .NET best prac
 
 image::dotnet-gateway-project.png[Gateway Project,340]
 
-This is a minimal ASP .NET project with support for asynchronous REST services. 
+This is a minimal .NET project with support for asynchronous REST services. 
 
 `*Examine 'Startup.cs' class*` in the **/projects/workshop/labs/gateway-dotnet/** directory.
 
@@ -159,7 +158,7 @@ The location or binding to the existing Catalog and Inventory REST services is d
 
 == Deploy on OpenShift
 
-It’s time to build and deploy your service on OpenShift. 
+It's time to build and deploy your service on OpenShift. 
 
 As you did previously for the Inventory and Catalog services in the earlier chapters, you need to `*build a new Component and then Deploy it in to the OpenShift cluster*`
 
@@ -172,12 +171,12 @@ There are two ways to get OpenShift S2I to build from source:
 * Upload the source code and get S2I to build from that
 
 Since we are exploring the Inner Loop and we might have made code changes locally in the IDE we will use the "Upload" method.
-There are 4 steps here to get the Gateway service running as you can see from the log output and the CLI steps:
+We will go through 4 steps to get the Gateway service running:
 
-* Create an S2I Build for the .NET application
-* Start the build by uploading the source
-* Create a new application (a deployment) in OpenShift for the application
-* Expose the application using a Route (so that we can easily test it)
+* Create an S2I Build for the .NET application with `oc new-build`
+* Start the build by uploading the source with `oc start-build`
+* Create a new application (a deployment) in OpenShift for the application with `oc new-app`
+* Expose the application using a Route (so that we can easily test it) with `oc expose`
 
 
 [tabs, subs="attributes+,+macros"]
@@ -203,11 +202,12 @@ cd /projects/workshop/labs/gateway-dotnet
 oc new-build dotnet:6.0 --name gateway-coolstore  \
   --labels=component=gateway \
   --env DOTNET_STARTUP_PROJECT=app.csproj --binary=true
-oc start-build gateway-coolstore --from-dir=. -w
+
+oc start-build gateway-coolstore --from-dir=. -w 
 
 oc new-app gateway-coolstore:latest --name gateway-coolstore  --labels=app=coolstore,app.kubernetes.io/instance=gateway,app.kubernetes.io/part-of=coolstore,app.kubernetes.io/name=gateway,app.openshift.io/runtime=dotnet,component=gateway 
 
-oc expose svc gateway-coolstore
+oc create route edge gateway-coolstore --service=gateway-coolstore
 ----
 
 NOTE: To open a terminal window, `*click on 'Terminal' -> 'New Terminal'*`

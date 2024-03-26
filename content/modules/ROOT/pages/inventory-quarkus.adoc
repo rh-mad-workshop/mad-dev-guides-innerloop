@@ -289,6 +289,7 @@ quarkus.http.host=0.0.0.0
 %prod.quarkus.openshift.route.expose=true
 %prod.quarkus.openshift.deployment-kind=Deployment
 %prod.quarkus.openshift.labels.app=coolstore
+%prod.quarkus.openshift.ports."http".host-port=8080
 %prod.quarkus.openshift.labels.component=inventory
 %prod.quarkus.openshift.part-of=coolstore
 %prod.quarkus.openshift.name=inventory-coolstore
