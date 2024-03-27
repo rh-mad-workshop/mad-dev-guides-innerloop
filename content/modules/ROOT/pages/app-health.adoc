@@ -7,7 +7,7 @@
 = Monitor Application Health
 :navtitle: Monitor Application Health
 
-_20 MINUTE EXERCISE_
+_10 MINUTE EXERCISE_
 
 In this lab we will learn how to monitor application health using OpenShift 
 health probes and how you can see container resource consumption using metrics.
@@ -29,7 +29,7 @@ Furthermore, there are of course a category of issues that can't be resolved by 
 In those scenarios, OpenShift would remove the faulty container from the built-in load-balancer and send traffic 
 only to the healthy containers that remain.
 
-There are three types of health probes available in OpenShift: https://docs.openshift.com/container-platform/4.12/applications/application-health.html#application-health-about_application-health[startup, readiness and liveness probes^]. 
+There are three types of health probes available in OpenShift: https://docs.openshift.com/container-platform/latest/applications/application-health.html#application-health-about_application-health[startup, readiness and liveness probes^]. 
 
 * **Startup probes** determine if the container in which it is scheduled is started
 * **Readiness probes** determine if the container in which it is scheduled is ready to service requests
@@ -37,11 +37,9 @@ There are three types of health probes available in OpenShift: https://docs.open
 
 
 Health probes also provide crucial benefits when automating deployments with practices like rolling updates in 
-order to remove downtime during deployments. A readiness health probe would signal OpenShift when to switch 
-traffic from the old version of the container to the new version so that the users don't get affected during 
-deployments.
+order to remove downtime during deployments. A readiness health probe would signal to OpenShift when to switch traffic from the old version of the container to the new version so that the users don't get affected during deployments.
 
-There are https://docs.openshift.com/container-platform/4.12/applications/application-health.html#application-health-about_types_application-health[three ways to define a health probe^] for a container:
+There are https://docs.openshift.com/container-platform/latest/applications/application-health.html#application-health-about_types_application-health[three ways to define a health probe^] for a container:
 
 * **HTTP Checks:** healthiness of the container is determined based on the response code of an HTTP 
 endpoint. Anything between 200 and 399 is considered success. A HTTP check is ideal for applications 
@@ -209,7 +207,7 @@ Wait till the build is complete then, `*Delete the Inventory Pod*` to make it st
 oc delete pod -l component=inventory -n my-project{USER_ID}
 ----
 
-It will take a few seconds to retstart, then verify that the health endpoint works for the **Inventory Service** using `*curl*`
+It will take a few seconds to restart, then verify that the health endpoint works for the **Inventory Service** using `*curl*`
 
 In your {CHE_URL}[Workspace^, role='params-link'], 
 `*execute the following commands in the terminal window*` - it may take a few attempts while the pod restarts.
@@ -257,7 +255,7 @@ image::openshift-inventory-add-liveness-probe.png[Che - Inventory Add Liveness P
 |HTTP GET
 
 |Use HTTPS
-|_Unchecked_
+|_Checked_
 
 |HTTP Headers
 |_Empty_
@@ -302,7 +300,7 @@ Now repeat the same task for the *Inventory* service, but this time set the *Rea
 |HTTP GET
 
 |Use HTTPS
-|_Unchecked_
+|_Checked_
 
 |HTTP Headers
 |_Empty_
@@ -335,6 +333,8 @@ https://docs.openshift.com/container-platform/4.12/welcome/index.html[deployment
 that react to changes to the container image or configuration. 
 Therefore, as soon as you define the probe, OpenShift automatically redeploys the pod using the new configuration including the liveness probe.
 
+[NOTE]
+You can also configure probes directly in your Quarkus application.properties, or even create custom health check classes. You can read more about it in the https://quarkus.io/guides/smallrye-healt[Quarkus Smallrye Health documentation]
 
 [#testing_Readiness]
 == Testing Inventory Readiness Probes
@@ -394,93 +394,6 @@ In such cases, setting a longer liveness internal might compromise the main bene
 the fast response to stuck states.
 
 **Startup probes** are useful to cover this worse case startup time.
-
-[#monitoring_all_applications]
-== Monitoring All Application Healths
-
-Now you understand and know how to configure Readiness, Liveness and Startup probes, let's confirm your expertise! 
-
-`*Configure the remaining Probes for Inventory and Catalog*` using the following information:
-
-.Startup Probes
-[%header,cols=2*]
-|===
-|Inventory Service
-|Startup
-
-|Type
-|HTTP GET
-
-|Use HTTPS
-|_Unchecked_
-
-|HTTP Headers
-|_Empty_
-
-|Path
-|/q/health/live
-
-|Port
-|8080
-
-|Failure Threshold
-|3
-
-|Success Threshold
-|1
-
-|Initial Delay
-|0
-
-|Period
-|5
-
-|Timeout
-|1
-
-|===
-
-[%header,cols=2*]
-|===
-|Catalog Service
-|Startup
-
-|Type
-|HTTP GET
-
-|Use HTTPS
-|_Unchecked_
-
-|HTTP Headers
-|_Empty_
-
-|Path
-|/actuator/health
-
-|Port
-|8080
-
-|Failure Threshold
-|15
-
-|Success Threshold
-|1
-
-|Initial Delay
-|0
-
-|Period
-|10
-
-|Timeout
-|1
-
-|===
-
-Finally, let's configure probes for Gateway and Web Service.
-In your {CHE_URL}[Workspace^, role='params-link'], `*click on 'Terminal' -> 'Run Task...' ->  'devfile: Probes - Configure Gateway & Web'*`
-
-image::che-runtask.png[Che - RunTask, 600]
 
 [#monitoring_application_metrics]
 == Monitoring Applications Metrics

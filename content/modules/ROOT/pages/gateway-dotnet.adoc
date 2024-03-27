@@ -6,7 +6,7 @@
 = Create Gateway Service with .NET
 :navtitle: Create Gateway Service with .NET
 
-_10 MINUTE EXERCISE_
+_5 MINUTE EXERCISE_
 
 In this lab you will learn how you can 
 build microservices using ASP.NET Core. During this lab you will 

@@ -7,7 +7,7 @@
 = Deploy Web UI with with Node.js and AngularJS
 :navtitle: Deploy Web UI with with Node.js and AngularJS
 
-_10 MINUTE EXERCISE_
+_5 MINUTE EXERCISE_
 
 In this lab you will deploy the Node.js and Angular-based 
 web frontend for the CoolStore online shop which uses the API Gateway services you deployed 
