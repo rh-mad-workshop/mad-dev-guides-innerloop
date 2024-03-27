@@ -6,3 +6,4 @@
 * xref:webui-deployment.adoc[6. Deploy Web UI with with Node.js and AngularJS]
 * xref:app-health.adoc[7. Monitor Application Health]
 * xref:app-config.adoc[8. Externalize Application Configuration]
+* xref:wrapup.adoc[9. Wrap Up]

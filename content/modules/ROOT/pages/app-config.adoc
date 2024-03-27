@@ -6,7 +6,7 @@
 = Externalize Application Configuration
 :navtitle: Externalize Application Configuration
 
-_15 MINUTE EXERCISE_
+_10 MINUTE EXERCISE_
 
 In this lab you will learn how to manage application configuration and how to provide environment 
 specific configuration to the services.
@@ -16,23 +16,14 @@ specific configuration to the services.
 --
 Applications require configuration in order to tweak the application behavior 
 or adapt it to a certain environment without the need to write code and repackage 
-the application for every change. These configurations are sometimes specific to 
-the application itself such as the number of products to be displayed on a product 
-page and some other times they are dependent on the environment they are deployed in 
-such as the database coordinates for the application.
+the application for every change. 
 
 The most common way to provide configurations to applications is using environment 
 variables and external configuration files such as properties, JSON or YAML files, 
-configuration files and command line arguments. These configuration artifacts
-should be externalized from the application and the container image content in
-order to keep the image portable across environments.
+configuration files and command line arguments.
 
-OpenShift provides a mechanism called https://docs.openshift.com/container-platform/4.12/welcome/index.html[**ConfigMaps**^] 
-in order to externalize configurations 
-from the applications deployed within containers and provide them to the containers 
-in a unified way as files and environment variables. OpenShift also offers a way to 
-provide sensitive configuration data such as certificates, credentials, etc. to the 
-application containers in a secure and encrypted mechanism called Secrets.
+Kubernetes, and by extension OpenShift, provides a mechanism called https://docs.openshift.com/container-platform/latest/welcome/index.html[**ConfigMaps**^] 
+in order to externalize configurations from the applications deployed within containers and provide them to the containers as files and environment variables. OpenShift also offers a way to provide sensitive configuration data such as certificates, credentials, etc. to the application containers in the form of Secrets.
 
 This allows developers to build the container image for their application only once, 
 and reuse that image to deploy the application across various environments with 
@@ -43,22 +34,16 @@ different configurations that are provided to the application at runtime.
 ==  Create Databases for Inventory and Catalog
 
 So far Catalog and Inventory services have been using an in-memory H2 database. Although H2 
-is a convenient database to run locally on your laptop, it's in no way appropriate for production or 
+is a convenient database to run locally on your laptop, it's not really appropriate for production or 
 even integration tests. Since it's strongly recommended to use the same technology stack (operating 
 system, JVM, middleware, database, etc.) that is used in production across all environments, you 
-should modify Inventory and Catalog services to use PostgreSQL/MariaDB instead of the H2 in-memory database.
+should modify Inventory and Catalog services to use eg. PostgreSQL or MariaDB instead of the H2 in-memory database.
 
-Fortunately, OpenShift supports stateful applications such as databases which require access to 
-a persistent storage that survives the container itself. You can deploy databases on OpenShift and 
-regardless of what happens to the container itself, the data is safe and can be used by the next 
-database container.
-
-Let's create a https://docs.openshift.com/container-platform/4.12/welcome/index.html[MariaDB database^] 
-for the **Inventory Service** using the MariaDB template that is provided out-of-the-box:
+Let's create a MariaDB database for the **Inventory Service** using the MariaDB template that is provided out-of-the-box:
 
 [TIP]
 ====
-https://docs.openshift.com/container-platform/4.12/openshift_images/using-templates.html[OpenShift Templates^] use YAML/JSON to compose 
+https://docs.openshift.com/container-platform/latest/openshift_images/using-templates.html[OpenShift Templates^] use YAML/JSON to compose 
 multiple containers and their configurations as a list of objects to be created and deployed at once, 
 making it simple to re-create complex deployments by just deploying a single template. Templates can 
 be parameterized to get input for fields like service names and generate values for fields like passwords.
@@ -158,7 +143,7 @@ Now you can move on to configure the Inventory and Catalog service to use these 
 
 By default, due to security reasons, **containers are not allowed to snoop around OpenShift clusters and discover objects**. Security comes first and discovery is a privilege that needs to be granted to containers in each project. 
 
-Since you do want our applications to discover the config maps inside the **my-project{USER_ID}** project, you need `*to grant permission to the Service Account to access the OpenShift REST API*` and find the config maps. 
+Since you do want our applications to discover the config maps inside the **my-project{USER_ID}** project, you need `*to grant permission to the Service Account to access the OpenShift REST API*` and find the config maps. You can do so with the following command:
 
 [source,shell,subs="{markup-in-source}",role=copypaste]
 ----
@@ -252,52 +237,6 @@ Wait till the build is complete then, `*Delete the Inventory Pod*` to make it st
 oc delete pod -l component=inventory -n my-project{USER_ID}
 ----
 
-Now **verify that the config map is in fact injected into the container by checking if the seed data is 
-loaded into the database**.
-
-`*Execute the following commands in the terminal window*`
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-oc rsh -n my-project{USER_ID} dc/inventory-mariadb
-----
-
-Once connected to the MariaDB container, `*run the following*`:
-
-[IMPORTANT]
-====
-Run this command inside the Inventory MariaDB container, after opening a remote shell to it.
-====
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD --host=$HOSTNAME --execute="select * from INVENTORY" $MYSQL_DATABASE
-----
-
-You should have the following output:
-
-[source,sql,subs="{markup-in-source}"]
-----
-+--------+----------+
-| itemId | quantity |
-+--------+----------+
-| 100000 |        0 |
-| 165613 |       45 |
-| 165614 |       87 |
-| 165954 |       43 |
-| 329199 |       12 |
-| 329299 |       35 |
-| 444434 |       32 |
-| 444435 |       53 |
-+--------+----------+
-----
-
-*Finally*, `*VERY IMPORTANT, exit*` *from inside the database container*:
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-exit
-----
 
 You have now created a config map that holds the configuration content for Inventory and can be updated 
 at anytime for example when promoting the container image between environments without needing to 
@@ -375,49 +314,6 @@ You should have the following output:
 2017-08-10 21:07:51.670  INFO 1 --- [           main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.PostgreSQL95Dialect
 ----
 
-You can also connect to the Catalog PostgreSQL database and verify that the seed data is loaded:
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-oc rsh -n my-project{USER_ID} dc/catalog-postgresql
-----
-
-Once connected to the PostgreSQL container, run the following:
-
-[IMPORTANT] 
-====
-Run this command inside the Catalog PostgreSQL container, after opening a remote shell to it.
-====
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-psql catalogdb -U catalog -c "select item_id, name, price from product"
-----
-
-You should have the following output:
-
-[source,sql,subs="{markup-in-source}"]
-----
-  item_id |              name               | price 
-  ---------+---------------------------------+-------
-  100000  | Red Fedora                      | 34.99
-  329299  | Quarkus T-shirt                 |    10
-  329199  | Pronounced Kubernetes           |     9
-  165613  | Knit socks                      |  4.15
-  444434  | Red Hat Impact T-shirt          |     9
-  444435  | Quarkus twill cap               |    13
-  165614  | Quarkus H2Go water bottle       | 14.45
-  444437  | Nanobloc Universal Webcam Cover |  2.75
-  165954  | Patagonia Refugio pack 28L      |     6
-  (9 rows)
-----
-
-*Finally*, `*VERY IMPORTANT, exit*` *from inside the database container*:
-
-[source,shell,subs="{markup-in-source}",role=copypaste]
-----
-exit
-----
 
 [#explore_secrets]
 == Explore Sensitive Configuration Data
@@ -433,9 +329,8 @@ credentials to simplify the steps; however, for production environments, you sho
 secure way to handle sensitive data.
 
 Fortunately, OpenShift already provides a secure mechanism for handling sensitive data which is 
-called https://docs.openshift.com/container-platform/4.12/welcome/index.html[**Secrets**^]. Secret objects act and are used 
-similarly to config maps however with the difference that they are encrypted as they travel over the wire 
-and also at rest when kept on a persistent disk. Like config maps, secrets can be injected into 
+called *Secrets*. Secret objects act and are used 
+similarly to config maps however with the difference that they are encrypted as they travel over the wire and also at rest when kept on a persistent disk. Like config maps, secrets can be injected into 
 containers as environment variables or files on the filesystem using a temporary file-storage 
 facility (tmpfs).
 --
@@ -498,4 +393,4 @@ You should be able to see the CoolStore application with all products and their 
 
 image::coolstore-web.png[CoolStore Shop,840]
 
-That's all for this lab! You are ready to move on to the next lab.
+
